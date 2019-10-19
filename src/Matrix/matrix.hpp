@@ -7,20 +7,20 @@ template <class T>
 class Matrix {
 public:
   /* Constructors */
-  Matrix<T>(size_t height, size_t width);
+  Matrix<T>(size_t heights, size_t width);
 
-  /* Getter */
+  /* Getters */
   size_t getWidth() const;
   size_t getHeight() const;
 
-  /* Operation */
+  /* Operations */
   Matrix<T> add(const Matrix<T>& m) const;
   Matrix<T> dot(const Matrix<T>& m) const;
   Matrix<T> transpose() const;
 
 private:
-  size_t height;
-  size_t width;
+  int height;
+  int width;
   std::vector<std::vector<T>> array;
 };
 
