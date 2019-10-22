@@ -24,4 +24,6 @@ private:
   std::vector<std::vector<T>> array;
 };
 
+#include "matrix.hxx"
+
 #endif

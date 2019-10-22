@@ -6,7 +6,7 @@ all: run
 
 .PHONY: run
 run:
-	$(CXX) $(CXXFLAGS) -o main src/Matrix/matrix.cpp src/main.cpp
+	$(CXX) $(CXXFLAGS) -o main src/main.cpp
 
 .PHONY: clean
 clean:

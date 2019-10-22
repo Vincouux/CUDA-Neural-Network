@@ -1,5 +1,3 @@
-#include "matrix.hpp"
-
 template <class T>
 Matrix<T>::Matrix(size_t height, size_t width) {
   this->height = height;
