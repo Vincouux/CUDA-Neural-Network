@@ -1,27 +1,35 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef NN_MATRIX_H
+#define NN_MATRIX_H
 
 #include <vector>
 
-template <class T>
+template <class Number>
 class Matrix {
 public:
   /* Constructors */
-  Matrix<T>(size_t heights, size_t width);
+  Matrix<Number>(size_t heights, size_t width);
+  ~Matrix<Number>();
 
   /* Getters */
   size_t getWidth() const;
   size_t getHeight() const;
 
   /* Operations */
-  Matrix<T> add(const Matrix<T>& m) const;
-  Matrix<T> dot(const Matrix<T>& m) const;
-  Matrix<T> transpose() const;
+  Matrix<Number> add(const Matrix<Number>& m) const;
+  Matrix<Number> dot(const Matrix<Number>& m) const;
+  Matrix<Number> transpose() const;
+
+  /* Operators */
+  Matrix<Number> operator + (const Matrix&);
+  Matrix<Number> operator * (const Matrix&);
+
+  /* Display */
+  void display() const;
 
 private:
-  int height;
-  int width;
-  std::vector<std::vector<T>> array;
+  size_t height;
+  size_t width;
+  Number* array;
 };
 
 #include "matrix.hxx"

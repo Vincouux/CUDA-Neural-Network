@@ -1,54 +1,87 @@
-template <class T>
-Matrix<T>::Matrix(size_t height, size_t width) {
+template <class Number>
+Matrix<Number>::Matrix(size_t height, size_t width) {
+  static_assert(std::is_same<Number, int>::value ||
+                std::is_same<Number, float>::value ||
+                std::is_same<Number, double>::value,
+                "Type not allowed. Use <int>, <float> or <double>.");
   this->height = height;
   this->width = width;
-  this->array = std::vector<std::vector<T>>(height, std::vector<T>(width));
+  this->array = (Number*)calloc(height * width, sizeof(Number));
+  srand(time(NULL));
+  for (size_t i=0; i < height * width; i++) {
+      this->array[i] = -1 + Number(rand()) / Number(RAND_MAX) * 2;
+
+  }
 }
 
-template <class T>
-size_t Matrix<T>::getHeight() const {
+template <class Number>
+Matrix<Number>::~Matrix() {
+  free(this->array);
+}
+
+template <class Number>
+size_t Matrix<Number>::getHeight() const {
   return this->height;
 }
 
-template <class T>
-size_t Matrix<T>::getWidth() const {
-  return this->height;
+template <class Number>
+size_t Matrix<Number>::getWidth() const {
+  return this->width;
 }
 
-template <class T>
-Matrix<T> Matrix<T>::add(const Matrix& m) const{
+template <class Number>
+Matrix<Number> Matrix<Number>::add(const Matrix& m) const {
   Matrix result(height, width);
-  for (int i=0; i < height; i++){
-    for (int j=0; j < width; j++){
-      result.array[i][j] = array[i][j] + m.array[i][j];
-    }
+  for (size_t i=0; i < this->height * this->width; i++) {
+      result->array[i] = this->array[i] + m.array[i];
   }
   return result;
 }
 
-template <class T>
-Matrix<T> Matrix<T>::dot(const Matrix& m) const {
-  T val=0;
-  Matrix<T> result(height, m.width);
-  for (int i=0; i < height; i++){
-    for (int j=0; j < m.width; j++){
-      for (int h=0; h < width; h++){
-        val += array[i][h] * m.array[h][j];
+template <class Number>
+Matrix<Number> Matrix<Number>::dot(const Matrix& m) const {
+  Number val = 0;
+  Matrix<Number> result(this->height, m.width);
+  for (size_t i=0; i < this->height; i++){
+    for (size_t j=0; j < m.width; j++){
+      for (size_t h=0; h < this->width; h++){
+        val += this->array[i * this->width + h] * m.array[h * m.width + j];
       }
-      result.array[i][j] = val;
-      val=0;
+      result.array[i * m.width + j] = val;
+      val = 0;
     }
   }
   return result;
 }
 
-template <class T>
-Matrix<T> Matrix<T>::transpose() const {
-  Matrix<T> result(width, height);
-  for (int i=0; i < width; i++){
-    for (int j=0; j < height; j++){
-      result.array[i][j] = array[j][i];
+template <class Number>
+Matrix<Number> Matrix<Number>::transpose() const {
+  Matrix<Number> result(this->width, this->height);
+  for (size_t i=0; i < this->width; i++) {
+    for (size_t j=0; j < this->height; j++) {
+      result.array[i * this->height + j] = this->array[j * this->height + i];
     }
   }
   return result;
+}
+
+template <class Number>
+void Matrix<Number>::display() const {
+  for (size_t i=0; i < this->height; i++) {
+    for (size_t j=0; j < this->width; j++) {
+      std::cout << this->array[i * this->width + j] << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << std::endl;
+}
+
+template <class Number>
+Matrix<Number> Matrix<Number>::operator + (const Matrix& m) {
+  return this->add(m);
+}
+
+template <class Number>
+Matrix<Number> Matrix<Number>::operator * (const Matrix& m) {
+  return this->dot(m);
 }
