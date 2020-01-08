@@ -9,12 +9,13 @@ class Model {
 public:
     Model();
     ~Model();
-    void add(Layer layer);
+    void add(Layer* layer);
+    void fit(Matrix<float> X, Matrix<float> Y);
     void compile();
     void summary();
 
 private:
-    std::vector<Layer> layers;
+    std::vector<Layer*> layers;
     unsigned depth;
 };
 
