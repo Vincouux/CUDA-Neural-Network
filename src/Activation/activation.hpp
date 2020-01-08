@@ -1,20 +1,22 @@
 #ifndef ACTIVATION_H
 #define ACTIVATION_H
 
-class Activation {
-public:
-  Activation(enum ActivationFunction);
-  ~Activation();
-  enum ActivationFunction
-  {
-    Logistic,
+enum ActivationFunction {
+    Sigmoid,
     Relu,
     Linear,
     TanH
-  };
+};
+
+class Activation {
+public:
+    Activation(enum ActivationFunction);
+    ~Activation();
+    Matrix* activate(Matrix* m);
+    Matrix* derivate(Matrix* m);
 
 private:
-  ActivationFunction activationFunction;
+    ActivationFunction activationFunction;
 };
 
 #endif
