@@ -1,6 +1,8 @@
 #ifndef ACTIVATION_H
 #define ACTIVATION_H
 
+#include "../Matrix/matrix.hpp"
+
 enum ActivationFunction {
     Sigmoid,
     Relu,
@@ -10,10 +12,11 @@ enum ActivationFunction {
 
 class Activation {
 public:
-    Activation(enum ActivationFunction);
+    Activation();
+    Activation(ActivationFunction activation);
     ~Activation();
-    Matrix* activate(Matrix* m);
-    Matrix* derivate(Matrix* m);
+    Matrix<float> activate(Matrix<float> m);
+    Matrix<float> derivate(Matrix<float> m);
 
 private:
     ActivationFunction activationFunction;
