@@ -1,20 +1,29 @@
 #ifndef LAYER_H
 #define LAYER_H
 
+#include <string>
+#include "../Activation/activation.hpp"
+#include "../Matrix/matrix.hpp"
+
+enum Type {
+    Input,
+    Dense
+};
+
 class Layer {
 public:
-    Layer(size_t size, Type type, Activation activation=ActivationFunction::Linear);
+    Layer(unsigned size, Type type, ActivationFunction activation);
     ~Layer();
-    enum Type {
-        Input,
-        Dense
-    };
     void initWeights(Layer prevLayer);
+    std::string getType();
+    void summary();
 
 private:
-    size_t size;
-    Activation activation;
+    unsigned size;
     Type type;
+    Activation activation;
+    Matrix<float>* weights;
+    Matrix<float>* neurons;
 };
 
 #endif

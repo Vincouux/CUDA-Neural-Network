@@ -1,17 +1,39 @@
 #include "layer.hpp"
 
-Layer(size_t size, Type type, Activation activation) {
+Layer::Layer(unsigned size, Type type, ActivationFunction activation) {
     this->size = size;
     this->type = type;
-    this->activation = activation;
+    this->activation = Activation(activation);
     if (type == Dense) {
-        self.neurons = Matrix<float>(this->size, 1);
+        this->neurons = new Matrix<float>(this->size, 1);
     } else {
-        self.neurons = NULL;
+        this->neurons = NULL;
     }
-    self.weights = NULL;
+    this->weights = NULL;
 }
 
-void initWeights(Layer prevLayer) {
-    this->weights = Matrix<float>(2, prevLayer->size);
+Layer::~Layer() {}
+
+void Layer::initWeights(Layer prevLayer) {
+    this->weights = new Matrix<float>(this->size, prevLayer.size);
+}
+
+std::string Layer::getType() {
+    switch(this->type) {
+        case Dense:
+            return "Dense";
+        case Input:
+            return "Input";
+        default:
+            return "Unknown";
+    }
+}
+
+void Layer::summary() {
+    std::cout << this->getType() << " Layer (" << this->size << ")" << std::endl;
+    if (this->type != Input) {
+        std::cout << "Weights dimension (" << this->weights->getHeight()
+                  << ", " << this->weights->getWidth() << ")" << std::endl;
+    }
+    std::cout << "-------------------------------" << std::endl << std::endl;
 }
