@@ -3,12 +3,18 @@
 
 class Layer {
 public:
-  Layer(int size, Activation activation);
-  ~Layer();
+    Layer(size_t size, Type type, Activation activation=ActivationFunction::Linear);
+    ~Layer();
+    enum Type {
+        Input,
+        Dense
+    };
+    void initWeights(Layer prevLayer);
 
 private:
-  Int size;
-  Activation activation;
+    size_t size;
+    Activation activation;
+    Type type;
 };
 
 #endif
