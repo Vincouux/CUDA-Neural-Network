@@ -5,25 +5,18 @@
 #include "../Activation/activation.hpp"
 #include "../Matrix/matrix.hpp"
 
-enum Type {
-    Input,
-    Dense
-};
-
 class Layer {
 public:
-    Layer(unsigned size, Type type, ActivationFunction activation);
-    ~Layer();
-    void initWeights(Layer prevLayer);
-    std::string getType();
-    void summary();
+    Layer(unsigned size) : size(size), neurons(Matrix<float>(size, 1)) {}
+    virtual void summary() = 0;
+    virtual void initWeights(unsigned prevSize) = 0;
+    Matrix<float> getNeurons() { return this->neurons; }
+    void setNeurons(Matrix<float> m) { this->neurons = m; }
+    unsigned getSize() { return this->size; }
 
-private:
+protected:
     unsigned size;
-    Type type;
-    Activation activation;
-    Matrix<float>* weights;
-    Matrix<float>* neurons;
+    Matrix<float> neurons;
 };
 
 #endif
