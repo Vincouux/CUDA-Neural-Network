@@ -8,6 +8,10 @@ class Dense: public Layer {
 public:
     Dense(unsigned size, ActivationFunction activation);
     void initWeights(unsigned prevSize);
+    Matrix<float>& getWeigths();
+    void setWeights(const Matrix<float>& m);
+    Matrix<float>& getBias();
+    void setBias(const Matrix<float>& m);
     void summary();
 
 private:
