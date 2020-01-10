@@ -12,14 +12,11 @@ enum ActivationFunction {
 
 class Activation {
 public:
-    Activation();
     Activation(ActivationFunction activation);
     ~Activation();
-    Matrix<float> activate(Matrix<float> m);
-    Matrix<float> derivate(Matrix<float> m);
-
-private:
     ActivationFunction activationFunction;
+    float (*activate)(float);
+    float (*derivate)(float);
 };
 
 #endif
