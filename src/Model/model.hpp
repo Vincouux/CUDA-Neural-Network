@@ -10,11 +10,13 @@ public:
     Model();
     ~Model();
     void add(Layer* layer);
-    void fit(Matrix<float> X, Matrix<float> Y);
+    void fit(const Matrix<float>& X, const Matrix<float>& Y);
+    void forward();
+    void backward();
     void compile();
     void summary();
 
-private:
+
     std::vector<Layer*> layers;
     unsigned depth;
 };
