@@ -24,22 +24,24 @@ void Model::fit(const Matrix<float>& X, const Matrix<float>& Y) {
 
 
         /* Compute the error. */
-        float error = 0.5 * (this->layers[this->depth - 1] - this->Y.getLine(i).transpose()).power(2).sum();
+        float error = 0.5f * (this->layers[this->depth - 1]->getNeurons() - Y.getLine(i).transpose()).power(2).sum();
+        (void)error;
 
         /* Compute the backward pass to propagate the error. */
         this->backward();
     }
-    (void)Y;
 }
 
 void Model::forward() {
     for (unsigned j = 1; j < this->depth; j++) {
-        this->layers[j]->setNeurons(this->layers[j]->getWeigths() * this->layers[j - 1]->getNeurons() + this->layers[j]->getBias());
+        Matrix<float> in = this->layers[j]->getWeigths() * this->layers[j - 1]->getNeurons() + this->layers[j]->getBias();
+        in.apply(this->layers[j]->getActivation());
+        this->layers[j]->setNeurons(in);
     }
 }
 
 void Model::backward() {
-    this->error.propagate();
+    return;
 }
 
 void Model::compile() {
