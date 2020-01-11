@@ -86,7 +86,8 @@ Matrix<Number>::Matrix(std::initializer_list<std::initializer_list<Number>> arr)
 
 template <class Number>
 Matrix<Number>::~Matrix() {
-    delete[] this->array;
+    //Fix me
+    //delete[] this->array;
 }
 
 template <class Number>
