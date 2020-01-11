@@ -22,6 +22,10 @@ void Dense::setBias(const Matrix<float>& m) {
     this->bias = m;
 }
 
+FloatToFloatFunc Dense::getActivation() {
+    return this->activation.activate;
+}
+
 void Dense::summary() {
     std::cout << "Dense Layer " << this->size << std::endl;
     std::cout << "Neurons: " << std::endl;

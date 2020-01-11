@@ -5,6 +5,8 @@
 #include "../Activation/activation.hpp"
 #include "../Matrix/matrix.hpp"
 
+typedef float (*FloatToFloatFunc)(float);
+
 class Layer {
 public:
     Layer(unsigned size) : size(size), neurons(Matrix<float>(size, 1)) {}
@@ -16,6 +18,7 @@ public:
     virtual void setWeights(const Matrix<float>& m) { (void)m; }
     virtual Matrix<float>& getBias() { return this->neurons; }
     virtual void setBias(const Matrix<float>& m) { (void)m; }
+    virtual FloatToFloatFunc getActivation() { return [](float x) { (void)x; return 1.f; }; }
     unsigned getSize() { return this->size; }
 
 protected:

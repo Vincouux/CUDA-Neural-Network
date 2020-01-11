@@ -12,6 +12,7 @@ public:
     void setWeights(const Matrix<float>& m);
     Matrix<float>& getBias();
     void setBias(const Matrix<float>& m);
+    FloatToFloatFunc getActivation();
     void summary();
 
 private:
