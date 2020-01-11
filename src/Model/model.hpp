@@ -12,7 +12,7 @@ public:
     void add(Layer* layer);
     void fit(const Matrix<float>& X, const Matrix<float>& Y);
     void forward();
-    void backward();
+    void backward(const Matrix<float>& Y);
     void compile();
     void summary();
 
