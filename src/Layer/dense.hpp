@@ -13,6 +13,7 @@ public:
     Matrix<float>& getBias();
     void setBias(const Matrix<float>& m);
     FloatToFloatFunc getActivation();
+    FloatToFloatFunc getDerivation();
     void summary();
 
 private:

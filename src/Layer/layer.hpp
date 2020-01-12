@@ -18,7 +18,8 @@ public:
     virtual void setWeights(const Matrix<float>& m) { (void)m; }
     virtual Matrix<float>& getBias() { return this->neurons; }
     virtual void setBias(const Matrix<float>& m) { (void)m; }
-    virtual FloatToFloatFunc getActivation() { return [](float x) { (void)x; return 1.f; }; }
+    virtual FloatToFloatFunc getActivation() { std::cout << "getActivation() is virtual." << std::endl; throw; }
+    virtual FloatToFloatFunc getDerivation() { std::cout << "getDerivation() is virtual." << std::endl; throw; }
     unsigned getSize() { return this->size; }
 
 protected:

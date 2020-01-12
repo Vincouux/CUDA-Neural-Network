@@ -26,6 +26,10 @@ FloatToFloatFunc Dense::getActivation() {
     return this->activation.activate;
 }
 
+FloatToFloatFunc Dense::getDerivation() {
+    return this->activation.derivate;
+}
+
 void Dense::summary() {
     std::cout << "Dense Layer " << this->size << std::endl;
     std::cout << "Neurons: " << std::endl;
