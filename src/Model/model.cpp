@@ -12,16 +12,13 @@ void Model::add(Layer* layer) {
 }
 
 void Model::fit(const Matrix<float>& X, const Matrix<float>& Y) {
-    for (unsigned e = 0; e < 10; e++) {
+    for (unsigned e = 0; e < 100; e++) {
 
         /* Verbose. */
-        std::cout << "Epoch #" << e << std::endl;
+        std::cout << "Epoch #" << e + 1 << std::endl;
 
         /* Training. */
         for (unsigned i = 0; i < X.getHeight(); i++) {
-
-            /* Verbose. */
-            std::cout << i << " / " << X.getHeight() << std::endl;
 
             /* Copy X to the first layer (input layer). */
             for (unsigned j = 0; j < X.getWidth(); j++) {
@@ -47,20 +44,42 @@ void Model::forward() {
 
 void Model::backward(const Matrix<float>& Y) {
     Matrix<float> delta = Matrix<float>(0, 0);
-    for (int j = this->depth - 1; j >= 0; j--) {
-        if ((unsigned)j == this->depth - 1) {
-            Matrix<float> tmp = this->layers[j]->getWeigths() * this->layers[j - 1]->getNeurons();
-            tmp.apply(this->layers[j]->getActivation());
-            delta = (this->layers[j]->getNeurons() - Y) * tmp;
+    for (unsigned j = 0; j < this->depth - 1; j++) {
+        unsigned i = this->depth - j - 1;
+        if (i == this->depth - 1) {
+            Matrix<float> tmp = this->layers[i]->getWeigths() * this->layers[i - 1]->getNeurons();
+            tmp.apply(this->layers[i]->getDerivation());
+            delta = (this->layers[i]->getNeurons() - Y) % tmp;
         } else {
-            Matrix<float> tmp = this->layers[j]->getWeigths() * this->layers[j - 1]->getNeurons();
-            tmp.apply(this->layers[j]->getActivation());
-            delta = this->layers[j + 1]->getWeigths() * delta * tmp;
+            Matrix<float> tmp = this->layers[i]->getWeigths() * this->layers[i - 1]->getNeurons();
+            tmp.apply(this->layers[i]->getDerivation());
+            delta = this->layers[i + 1]->getWeigths().transpose() * delta % tmp;
         }
-        Matrix<float> deriv = delta * this->layers[j - 1]->getNeurons().transpose();
-        this->layers[j]->setWeights(this->layers[j]->getWeigths() - 0.1f * deriv);
+        Matrix<float> deriv = delta * this->layers[i - 1]->getNeurons().transpose();
+        this->layers[i]->setWeights(this->layers[i]->getWeigths() - 0.2f * deriv);
+        this->layers[i]->setBias(this->layers[i]->getBias() - 0.2f * delta);
     }
     return;
+}
+
+Matrix<float> Model::predict(const Matrix<float>& X) {
+    Matrix<float> result = Matrix<float>(X.getHeight(), this->layers[this->depth - 1]->getNeurons().getHeight());
+    for (unsigned i = 0; i < X.getHeight(); i++) {
+
+        /* Copy X to the first layer (input layer). */
+        for (unsigned j = 0; j < X.getWidth(); j++) {
+            this->layers[0]->getNeurons().setElementAt(j, 0, X.getElementAt(i, j));
+        }
+
+        /* Compute the forward pass. */
+        this->forward();
+
+        /* Add last layer neurons to the result. */
+        for (unsigned j = 0; j < this->layers[this->depth - 1]->getNeurons().getHeight(); j++) {
+            result.setElementAt(i, j, this->layers[this->depth - 1]->getNeurons().getElementAt(j, 0));
+        }
+    }
+    return result;
 }
 
 void Model::compile() {

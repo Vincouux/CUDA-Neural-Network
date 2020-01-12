@@ -13,6 +13,7 @@ public:
     void fit(const Matrix<float>& X, const Matrix<float>& Y);
     void forward();
     void backward(const Matrix<float>& Y);
+    Matrix<float> predict(const Matrix<float>& X);
     void compile();
     void summary();
 
