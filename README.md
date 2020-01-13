@@ -16,8 +16,7 @@
 ```cpp
 Model model = Model();
 ```
-
-### Add layers
+### Add Layers
 ```cpp
 model.add(new Input(784));
 model.add(new Dense(256, TanH));
