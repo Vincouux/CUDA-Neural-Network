@@ -42,7 +42,7 @@ void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs,
         /* Verbose. */
         std::cout << error / X.getHeight() << std::endl;
 
-        if (es && inc > 3) {
+        if (es && inc > 10) {
             std::cout << "Early stopping !" << std::endl;
             break;
         }
@@ -76,13 +76,12 @@ void Model::backward(const Matrix<float>& Y, float lr) {
         } else {
             Matrix<float> tmp = this->layers[i]->getWeigths() * this->layers[i - 1]->getNeurons();
             tmp.apply(this->layers[i]->getDerivation());
-            delta = this->layers[i + 1]->getWeigths().transpose() * delta % tmp;
+            delta = (this->layers[i + 1]->getWeigths().transpose() * delta) % tmp;
         }
         Matrix<float> deriv = delta * this->layers[i - 1]->getNeurons().transpose();
         this->layers[i]->setWeights(this->layers[i]->getWeigths() - lr * deriv);
-        this->layers[i]->setBias(this->layers[i]->getBias() - lr * delta);
+        this->layers[i]->setBias(this->layers[i]->getBias() - 0.1f * lr * delta);
     }
-    return;
 }
 
 Matrix<float> Model::predict(const Matrix<float>& X) {
