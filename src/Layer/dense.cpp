@@ -1,10 +1,9 @@
 #include "dense.hpp"
 
-Dense::Dense(unsigned size, ActivationFunction activation) : Layer(size), weights(Matrix<float>(0, 0)), bias(Matrix<float>(0, 0)), activation(Activation(activation)) {}
+Dense::Dense(unsigned size, ActivationFunction activation) : Layer(size), weights(Matrix<float>()), bias(Matrix<float>(size, 1)), activation(Activation(activation)) {}
 
 void Dense::initWeights(unsigned prevSize) {
-    this->weights = Matrix<float>(this->size, prevSize);
-    this->bias = Matrix<float>(this->size, 1);
+    this->weights = Matrix<float>(this->size, prevSize, -0.5f, 0.5f);
 }
 
 Matrix<float>& Dense::getWeigths() {
@@ -31,12 +30,12 @@ FloatToFloatFunc Dense::getDerivation() {
 }
 
 void Dense::summary() {
-    std::cout << "Dense Layer " << this->size << std::endl;
+    std::cout << "Dense Layer " << this->size << std::endl << std::endl;
     std::cout << "Neurons: " << std::endl;
     this->neurons.display();
-    std::cout << "Weights: " << std::endl;
+    std::cout << std::endl << "Weights: " << std::endl;
     this->weights.display();
-    std::cout << "Bias: " << std::endl;
+    std::cout << std::endl << "Bias: " << std::endl;
     this->bias.display();
     std::cout << "---------------------" << std::endl << std::endl;
 }
