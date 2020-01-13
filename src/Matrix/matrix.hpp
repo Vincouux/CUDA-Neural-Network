@@ -2,7 +2,12 @@
 #define MATRIX_H
 
 #include <iostream>
+#include <fstream>
 #include <cmath>
+#include <string>
+#include <algorithm>
+#include <memory>
+#include <iomanip>
 
 #include "kernels.cuh"
 
@@ -10,15 +15,17 @@ template <class Number>
 class Matrix {
 public:
     /* Constructors */
+    Matrix<Number>();
     Matrix<Number>(size_t height, size_t width);
+    Matrix<Number>(size_t height, size_t width, Number min, Number max);
     Matrix<Number>(std::initializer_list<std::initializer_list<Number>> array);
-    ~Matrix<Number>();
+    Matrix<Number>(std::string path);
 
     /* Getters */
     size_t getWidth() const;
     size_t getHeight() const;
     Number getElementAt(size_t i, size_t j) const;
-    Number setElementAt(size_t i, size_t j, Number el);
+    void setElementAt(size_t i, size_t j, Number el);
 
     /* Operations */
     Matrix<Number> add(const Matrix& m, bool gpu = true) const;
@@ -52,8 +59,19 @@ public:
 private:
     size_t height;
     size_t width;
-    Number* array;
+    std::vector<Number> array;
 };
+
+template <class Number>
+Matrix<Number>::Matrix() {
+    static_assert(std::is_same<Number, int>::value ||
+                  std::is_same<Number, float>::value ||
+                  std::is_same<Number, double>::value,
+                  "Type not allowed. Use <int>, <float> or <double>.");
+    this->height = 0;
+    this->width = 0;
+    this->array = std::vector<Number>(0);
+}
 
 template <class Number>
 Matrix<Number>::Matrix(size_t height, size_t width) {
@@ -63,10 +81,31 @@ Matrix<Number>::Matrix(size_t height, size_t width) {
                   "Type not allowed. Use <int>, <float> or <double>.");
     this->height = height;
     this->width = width;
-    this->array = new Number[this->height * this->width];
+    this->array = std::vector<Number>(this->height * this->width);
     srand(time(NULL));
-    for (size_t i = 0; i < height * width; i++) {
-        this->array[i] = -1 + rand() / Number(RAND_MAX) * 2;
+    for (size_t i = 0; i < height; i++) {
+        for (size_t j = 0; j < width; j++) {
+            Number n = -1 + rand() / Number(RAND_MAX) * 2;
+            this->setElementAt(i, j, n);
+        }
+    }
+}
+
+template <class Number>
+Matrix<Number>::Matrix(size_t height, size_t width, Number min, Number max) {
+    static_assert(std::is_same<Number, int>::value ||
+                  std::is_same<Number, float>::value ||
+                  std::is_same<Number, double>::value,
+                  "Type not allowed. Use <int>, <float> or <double>.");
+    this->height = height;
+    this->width = width;
+    this->array = std::vector<Number>(this->height * this->width);
+    srand(time(NULL));
+    for (size_t i = 0; i < height; i++) {
+        for (size_t j = 0; j < width; j++) {
+            Number n = min + (max - min) * (rand() / Number(RAND_MAX));
+            this->setElementAt(i, j, n);
+        }
     }
 }
 
@@ -78,7 +117,7 @@ Matrix<Number>::Matrix(std::initializer_list<std::initializer_list<Number>> arr)
                   "Type not allowed. Use <int>, <float> or <double>.");
     this->height = (int)arr.size();
     this->width = (int)arr.begin()->size();
-    this->array = new Number[this->height * this->width];
+    this->array = std::vector<Number>(this->height * this->width);
     for (size_t i = 0; i < height; i++) {
         for (size_t j = 0; j < width; j++) {
             this->setElementAt(i, j, (arr.begin() + i)->begin()[j]);
@@ -87,9 +126,30 @@ Matrix<Number>::Matrix(std::initializer_list<std::initializer_list<Number>> arr)
 }
 
 template <class Number>
-Matrix<Number>::~Matrix() {
-    //Fix me
-    //delete[] this->array;
+Matrix<Number>::Matrix(std::string path) {
+    std::ifstream file;
+    file.open(path);
+    this->height = std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n');
+    file.seekg(0);
+    std::string line;
+    std::getline(file, line);
+    this->width = 1;
+    for (unsigned i = 0; i < line.size(); i++) {
+        if (line[i] == ' ') {
+            this->width += 1;
+        }
+    }
+    this->array = std::vector<Number>(this->height * this->width);
+    unsigned i = 0;
+    unsigned j = 0;
+    while (!file.eof()) {
+        int tmp;
+        file >> tmp;
+        this->setElementAt(i, j, (Number)tmp);
+        j += 1;
+        i += (j == width) ? 1 : 0;
+        j %= width;
+    }
 }
 
 template <class Number>
@@ -112,12 +172,12 @@ Number Matrix<Number>::getElementAt(size_t i, size_t j) const {
 }
 
 template <class Number>
-Number Matrix<Number>::setElementAt(size_t i, size_t j, Number el) {
+void Matrix<Number>::setElementAt(size_t i, size_t j, Number el) {
     if (i >= this->height || j >= this->width) {
         fprintf(stderr, "Can't set element at %li, %li. Shape = (%li, %li)\n", i, j, this->height, this->width);
         throw;
     }
-    return this->array[i * this->width + j] = el;
+    this->array[i * this->width + j] = el;
 }
 
 template <class Number>
@@ -128,7 +188,7 @@ Matrix<Number> Matrix<Number>::add(const Matrix& m, bool gpu) const {
     }
     Matrix result(height, width);
     if (gpu) {
-        Wrapper().add(this->array, m.array, result.array, this->width * this->height);
+        Wrapper().add((Number*)&this->array[0], (Number*)&m.array[0], (Number*)&result.array[0], this->width * this->height);
     } else {
         for (size_t i = 0; i < this->height; i++) {
             for (size_t j = 0; j < this->width; j++) {
@@ -184,7 +244,7 @@ Matrix<Number> Matrix<Number>::dot(const Matrix& m, bool gpu) const {
     }
     Matrix<Number> result(this->height, m.width);
     if (gpu) {
-        Wrapper().dot(this->array, m.array, result.array, this->height, m.width, this->width);
+        Wrapper().dot((Number*)&this->array[0], (Number*)&m.array[0], (Number*)&result.array[0], this->height, m.width, this->width);
     } else {
         Number val = 0;
         for (size_t i = 0; i < this->height; i++) {
@@ -343,7 +403,8 @@ template <class Number>
 void Matrix<Number>::display() const {
     for (size_t i = 0; i < this->height; i++) {
         for (size_t j = 0; j < this->width; j++) {
-            std::cout << this->getElementAt(i, j) << " ";
+            float n = (float)this->getElementAt(i, j);
+            printf("%c%.*f  ", n >= 0 ? ' ' : '\0', 6, n);
         }
         std::cout << "\n";
     }
