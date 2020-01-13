@@ -7,7 +7,8 @@ enum ActivationFunction {
     Sigmoid,
     Relu,
     Linear,
-    TanH
+    TanH,
+    LeakyRelu
 };
 
 class Activation {

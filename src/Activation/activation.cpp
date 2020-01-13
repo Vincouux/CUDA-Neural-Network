@@ -18,6 +18,12 @@ Activation::Activation(ActivationFunction activation) {
         case Linear:
             this->activate = [](float x) { return x; };
             this->derivate = [](float x) { (void)x; return 1.f; };
+            break;
+        case LeakyRelu:
+            this->activate = [](float x) { return x > 0.f ? x : -0.1f * x; };
+            this->derivate = [](float x) { return x > 0.f ? 1.f : -0.1f; };
+            break;
+
     }
 }
 
