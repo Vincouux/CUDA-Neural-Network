@@ -5,14 +5,15 @@ Model::Model() {
     this->depth = 0;
 }
 
-Model::~Model() {}
+Model::~Model() {
+}
 
 void Model::add(Layer* layer) {
     this->layers.push_back(layer);
 }
 
-void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs, float lr, bool es) {
-    float error = 0;
+void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs, float lr, unsigned batchSize, bool es) {
+    double error = 0;
     float last_error = 0;
     unsigned inc = 0;
     for (unsigned e = 0; e < epochs; e++) {
@@ -22,25 +23,29 @@ void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs,
         error = 0;
 
         /* Training. */
-        for (unsigned i = 0; i < X.getHeight(); i++) {
+        for (unsigned i = 0; i < X.getHeight() / batchSize; i += batchSize) {
 
             /* Copy X to the first layer (input layer). */
             for (unsigned j = 0; j < X.getWidth(); j++) {
                 this->layers[0]->getNeurons().setElementAt(j, 0, X.getElementAt(i, j));
             }
 
-            /* Compute the forward pass. */
-            this->forward();
+            /* Compute the forward pass by batch. */
+            Matrix<float> outputError = 0.f * Matrix<float>(this->layers[this->depth - 1]->getNeurons().getHeight(), this->layers[this->depth - 1]->getNeurons().getWidth());
+            for (unsigned k = 0; k < batchSize; k++) {
+                this->forward();
+                outputError = outputError + this->layers[this->depth - 1]->getNeurons() - Y.getLine(i * batchSize + k).transpose();
+            }
 
             /* Compute the backward pass to propagate the error. */
-            this->backward(Y.getLine(i), lr);
+            this->backward(outputError, lr);
 
             /* Add the error */
             error += 0.5 * (this->layers[this->depth - 1]->getNeurons() - Y.getLine(i).transpose()).power(2).sum();
         }
 
         /* Verbose. */
-        std::cout << error / X.getHeight() << std::endl;
+        std::cout << error / (X.getHeight() / batchSize) << std::endl;
 
         if (es && inc > 10) {
             std::cout << "Early stopping !" << std::endl;
@@ -65,14 +70,14 @@ void Model::forward() {
     }
 }
 
-void Model::backward(const Matrix<float>& Y, float lr) {
+void Model::backward(const Matrix<float>& error, float lr) {
     Matrix<float> delta = Matrix<float>(0, 0);
     for (unsigned j = 0; j < this->depth - 1; j++) {
         unsigned i = this->depth - j - 1;
         if (i == this->depth - 1) {
             Matrix<float> tmp = this->layers[i]->getWeigths() * this->layers[i - 1]->getNeurons();
             tmp.apply(this->layers[i]->getDerivation());
-            delta = (this->layers[i]->getNeurons() - Y) % tmp;
+            delta = error % tmp;
         } else {
             Matrix<float> tmp = this->layers[i]->getWeigths() * this->layers[i - 1]->getNeurons();
             tmp.apply(this->layers[i]->getDerivation());
