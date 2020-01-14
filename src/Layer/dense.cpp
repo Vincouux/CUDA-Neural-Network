@@ -30,12 +30,7 @@ FloatToFloatFunc Dense::getDerivation() {
 }
 
 void Dense::summary() {
-    std::cout << "Dense Layer " << this->size << std::endl << std::endl;
-    std::cout << "Neurons: " << std::endl;
-    this->neurons.display();
-    std::cout << std::endl << "Weights: " << std::endl;
-    this->weights.display();
-    std::cout << std::endl << "Bias: " << std::endl;
-    this->bias.display();
-    std::cout << "---------------------" << std::endl << std::endl;
+    std::cout << "+ Layer <Dense> of size " << this->size << std::endl;
+    this->activation.summary();
+    std::cout << "+----------------------------" << std::endl;
 }
