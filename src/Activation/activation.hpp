@@ -18,6 +18,10 @@ public:
     ActivationFunction activationFunction;
     float (*activate)(float);
     float (*derivate)(float);
+    void summary();
+
+private:
+    std::string name;
 };
 
 #endif
