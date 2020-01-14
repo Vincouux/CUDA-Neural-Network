@@ -23,29 +23,35 @@ void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs,
         error = 0;
 
         /* Training. */
-        for (unsigned i = 0; i < X.getHeight() / batchSize; i += batchSize) {
-
-            /* Copy X to the first layer (input layer). */
-            for (unsigned j = 0; j < X.getWidth(); j++) {
-                this->layers[0]->getNeurons().setElementAt(j, 0, X.getElementAt(i, j));
-            }
+        for (unsigned i = 0; i < X.getHeight() / batchSize; i++) {
 
             /* Compute the forward pass by batch. */
             Matrix<float> outputError = 0.f * Matrix<float>(this->layers[this->depth - 1]->getNeurons().getHeight(), this->layers[this->depth - 1]->getNeurons().getWidth());
             for (unsigned k = 0; k < batchSize; k++) {
+
+                /* Copy X to the first layer (input layer). */
+                for (unsigned j = 0; j < X.getWidth(); j++) {
+                    this->layers[0]->getNeurons().setElementAt(j, 0, X.getElementAt(i * batchSize + k, j));
+                }
+
+                /* Forward. */
                 this->forward();
+
+                /* Adding the error. */
                 outputError = outputError + this->layers[this->depth - 1]->getNeurons() - Y.getLine(i * batchSize + k).transpose();
             }
+
+            outputError = outputError / (float) batchSize;
 
             /* Compute the backward pass to propagate the error. */
             this->backward(outputError, lr);
 
             /* Add the error */
-            error += 0.5 * (this->layers[this->depth - 1]->getNeurons() - Y.getLine(i).transpose()).power(2).sum();
+            error += outputError.power(2).sum();
         }
 
         /* Verbose. */
-        std::cout << error / (X.getHeight() / batchSize) << std::endl;
+        std::cout << 0.5 * error / (X.getHeight() / batchSize) << std::endl;
 
         if (es && inc > 10) {
             std::cout << "Early stopping !" << std::endl;
@@ -71,7 +77,7 @@ void Model::forward() {
 }
 
 void Model::backward(const Matrix<float>& error, float lr) {
-    Matrix<float> delta = Matrix<float>(0, 0);
+    Matrix<float> delta = Matrix<float>();
     for (unsigned j = 0; j < this->depth - 1; j++) {
         unsigned i = this->depth - j - 1;
         if (i == this->depth - 1) {
