@@ -1,4 +1,10 @@
 #include "model.hpp"
+#include <chrono>
+
+uint64_t timeSinceEpochMillisec() {
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 Model::Model() {
     this->layers = std::vector<Layer*>();
@@ -12,46 +18,73 @@ void Model::add(Layer* layer) {
     this->layers.push_back(layer);
 }
 
-void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs, float lr, unsigned batchSize, bool es) {
+void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs, float lr, bool es, bool verbose) {
     double error = 0;
     float last_error = 0;
     unsigned inc = 0;
+    float loading = 0;
+    uint64_t totalTime, startBatch, endBatch, eta = 0;
+
+    /* Verbose. */
+    if (verbose) {
+        std::cout << std::endl;
+    }
+
     for (unsigned e = 0; e < epochs; e++) {
 
         /* Verbose. */
-        std::cout << "Epoch #" << e + 1 << " - Error ";
+        if (verbose) {
+        	totalTime = 0;
+            std::cout << "Epoch "<< e + 1 << "/" << epochs << std::endl;
+        }
         error = 0;
 
         /* Training. */
-        for (unsigned i = 0; i < X.getHeight() / batchSize; i++) {
-
-            /* Compute the forward pass by batch. */
-            Matrix<float> outputError = 0.f * Matrix<float>(this->layers[this->depth - 1]->getNeurons().getHeight(), this->layers[this->depth - 1]->getNeurons().getWidth());
-            for (unsigned k = 0; k < batchSize; k++) {
-
-                /* Copy X to the first layer (input layer). */
-                for (unsigned j = 0; j < X.getWidth(); j++) {
-                    this->layers[0]->getNeurons().setElementAt(j, 0, X.getElementAt(i * batchSize + k, j));
-                }
-
-                /* Forward. */
-                this->forward();
-
-                /* Adding the error. */
-                outputError = outputError + this->layers[this->depth - 1]->getNeurons() - Y.getLine(i * batchSize + k).transpose();
+        for (unsigned i = 0; i < X.getHeight(); i++) {
+            if (verbose) {
+            	startBatch = timeSinceEpochMillisec();
             }
 
-            outputError = outputError / (float) batchSize;
+            /* Copy X to the first layer (input layer). */
+            for (unsigned j = 0; j < X.getWidth(); j++) {
+                this->layers[0]->getNeurons().setElementAt(j, 0, X.getElementAt(i, j));
+            }
+
+            /* Forward. */
+            this->forward();
+
+            /* Adding the error. */
+            Matrix<float> outputError = this->layers[this->depth - 1]->getNeurons() - Y.getLine(i).transpose();
 
             /* Compute the backward pass to propagate the error. */
             this->backward(outputError, lr);
 
-            /* Add the error */
+            /* Add the error. */
             error += outputError.power(2).sum();
+
+            /* Verbose. */
+            if (verbose) {
+            	endBatch = timeSinceEpochMillisec();
+                totalTime += (endBatch - startBatch);
+                eta = (X.getHeight() - i) * totalTime / (i + 1) / 1000;
+                std::cout << "\r" << i + 1 << "/" << X.getHeight() << " [";
+                loading = 0;
+                while ((loading / 30.f) < ((float)i / X.getHeight())) {
+                    std::cout << "=";
+                    loading += 1.f;
+                }
+                while (loading < 30.f) {
+                    std::cout << " ";
+                    loading += 1;
+                }
+                std::cout << "] - ETA " << eta << "sec - loss " << 0.5 * error / i << std::flush;
+            }
         }
 
         /* Verbose. */
-        std::cout << 0.5 * error / (X.getHeight() / batchSize) << std::endl;
+        if (verbose) {
+            std::cout << std::endl;
+        }
 
         if (es && inc > 10) {
             std::cout << "Early stopping !" << std::endl;
@@ -65,6 +98,11 @@ void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs,
         }
 
         last_error = error;
+    }
+
+    /* Verbose. */
+    if (verbose) {
+        std::cout << std::endl;
     }
 }
 
@@ -123,8 +161,9 @@ void Model::compile() {
 }
 
 void Model::summary() {
-    std::cout << "Model of " << this->depth << " layers." << std::endl;
-    std::cout << "---------------------" << std::endl << std::endl;
+    std::cout << std::endl << "+----------------------------" << std::endl;
+    std::cout << "+ Model of " << this->depth << " layers." << std::endl;
+    std::cout << "+----------------------------" << std::endl;
     for (unsigned i = 0; i < this->depth; i++) {
         this->layers[i]->summary();
     }

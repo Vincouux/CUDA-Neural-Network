@@ -10,7 +10,7 @@ public:
     Model();
     ~Model();
     void add(Layer* layer);
-    void fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs, float lr, unsigned batchSize, bool es=false);
+    void fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs, float lr, bool es=false, bool verbose=true);
     void forward();
     void backward(const Matrix<float>& error, float lr);
     Matrix<float> predict(const Matrix<float>& X);
