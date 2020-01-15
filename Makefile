@@ -1,6 +1,6 @@
 CXX = g++
 NVCC = nvcc
-CXXFLAGS = -Werror -Wextra -Wall -pedantic -std=c++17 -g
+CXXFLAGS = -Werror -Wextra -Wall -pedantic -std=c++17 -O3
 TRASH = main
 
 all: run

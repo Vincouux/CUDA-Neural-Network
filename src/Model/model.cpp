@@ -23,7 +23,10 @@ void Model::fit(const Matrix<float>& X, const Matrix<float>& Y, unsigned epochs,
     float last_error = 0;
     unsigned inc = 0;
     float loading = 0;
-    uint64_t totalTime, startBatch, endBatch, eta = 0;
+    uint64_t totalTime = 0;
+    uint64_t startBatch = 0;
+    uint64_t endBatch = 0;
+    uint64_t eta = 0;
 
     /* Verbose. */
     if (verbose) {
