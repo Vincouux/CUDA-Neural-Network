@@ -36,10 +36,15 @@ Matrix<float> Y = Matrix<float>("data/y_test.csv");
 
 /*
 Model::fit(const Matrix<float>& X, const Matrix<float>& Y,
-           unsigned epochs, float lr, unsigned batchSize,
-           bool earlystopping)
+           unsigned epochs, float lr, bool earlystopping, bool verbose)
 */
-model.fit(X, Y, 1000, 0.001f, 256, true);
+model.fit(X, Y, 1000, 0.001f, true, true);
+```
+
+### Predicting & Testing
+```cpp
+Matrix<float> Ypred = model.predict(X);
+Ypred.display();
 ```
 
 > Work In Progress
