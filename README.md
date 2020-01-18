@@ -31,8 +31,8 @@ model.summary();
 
 ### Load Data & Fit
 ```cpp
-Matrix<float> X = (Matrix<float>("data/x_test.csv") / 255.f) - 0.5f;
-Matrix<float> Y = Matrix<float>("data/y_test.csv");
+Matrix<float> X = Matrix<float>("data/x_train.csv") / 255.f;
+Matrix<float> Y = Matrix<float>("data/y_train.csv");
 
 /*
 Model::fit(const Matrix<float>& X, const Matrix<float>& Y,
@@ -43,8 +43,11 @@ model.fit(X, Y, 1000, 0.001f, true, true);
 
 ### Predicting & Testing
 ```cpp
-Matrix<float> Ypred = model.predict(X);
-Ypred.display();
+Matrix<float> XT = Matrix<float>("data/x_test.csv") / 255.f;
+Matrix<float> YT = Matrix<float>("data/y_test.csv");
+Matrix<float> YP = model.predict(XT);
+float error = 0.5f * (YT - YP).power(2).sum() / YT.getHeight();
+std::cout << "Error: " << error << std::endl;
 ```
 
 > Work In Progress
